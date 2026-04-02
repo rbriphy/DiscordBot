@@ -6,8 +6,8 @@ class MessageSummarizer:
     """Handles message summarization using OpenRouter API."""
     
     def __init__(self):
-        """Initialize the OpenAI client with OpenRouter configuration."""
-        self.client = openai.OpenAI(
+        """Initialize the async OpenAI client with OpenRouter configuration."""
+        self.client = openai.AsyncOpenAI(
             api_key=config.OPENROUTER_API_KEY,
             base_url=config.OPENROUTER_BASE_URL
         )
@@ -33,7 +33,7 @@ class MessageSummarizer:
         
         return "\n".join(formatted)
     
-    def create_summarization_prompt(self, messages_text: str, summary_length: str = "medium") -> str:
+    def create_summarization_prompt(self, messages_text: str, summary_length: str = "short") -> str:
         """Create the prompt for summarization.
         
         Args:
@@ -69,7 +69,7 @@ Summary:"""
         
         return prompt
     
-    async def summarize_messages(self, messages: List[Dict], summary_length: str = "medium") -> str:
+    async def summarize_messages(self, messages: List[Dict], summary_length: str = "short") -> str:
         """Summarize a list of Discord messages.
         
         Args:
@@ -92,8 +92,8 @@ Summary:"""
             # Create prompt
             prompt = self.create_summarization_prompt(messages_text, summary_length)
             
-            # Call OpenRouter API
-            response = self.client.chat.completions.create(
+            # Call OpenRouter API (async)
+            response = await self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {
