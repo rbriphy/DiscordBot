@@ -76,6 +76,9 @@ async def summarize_command(
                         'timestamp': message.created_at.strftime('%Y-%m-%d %H:%M')
                     })
             
+            # Reverse messages to chronological order (oldest first)
+            messages.reverse()
+            
             if not messages:
                 await interaction.followup.send(
                     f"No messages found in the last {hours} hour(s).",
@@ -98,6 +101,9 @@ async def summarize_command(
                         'content': message.content,
                         'timestamp': message.created_at.strftime('%Y-%m-%d %H:%M')
                     })
+            
+            # Reverse messages to chronological order (oldest first)
+            messages.reverse()
             
             if not messages:
                 await interaction.followup.send(

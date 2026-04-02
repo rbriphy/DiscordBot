@@ -38,7 +38,7 @@ class MessageSummarizer:
         
         Args:
             messages_text: Formatted messages text
-            summary_length: Length of summary (short, medium, long)
+            summary_length: Length of summary (short or long)
             
         Returns:
             Formatted prompt string
