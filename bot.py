@@ -39,13 +39,13 @@ async def on_ready():
 @app_commands.describe(
     count='Number of messages to summarize (default: 50)',
     hours='Summarize messages from the last X hours (alternative to count)',
-    length='Summary length: short, medium, or long (default: medium)'
+    length='Summary length: short (1-2 sentences) or long (brief summary, default)'
 )
 async def summarize_command(
     interaction: discord.Interaction,
     count: Optional[int] = None,
     hours: Optional[float] = None,
-    length: Optional[str] = 'medium'
+    length: Optional[str] = 'long'
 ):
     """Slash command to summarize messages in the current channel."""
     # Defer response since summarization may take time
@@ -53,7 +53,7 @@ async def summarize_command(
     
     try:
         # Validate length parameter
-        valid_lengths = ['short', 'medium', 'long']
+        valid_lengths = ['short', 'long']
         if length and length.lower() not in valid_lengths:
             await interaction.followup.send(
                 f"Invalid length '{length}'. Valid options: {', '.join(valid_lengths)}",
@@ -61,7 +61,7 @@ async def summarize_command(
             )
             return
         
-        summary_length = length.lower() if length else 'medium'
+        summary_length = length.lower() if length else 'long'
         
         # Determine how many messages to fetch
         if hours:
@@ -153,7 +153,7 @@ async def help_command(interaction: discord.Interaction):
         value=(
             "**count**: Number of messages (1-100, default: 50)\n"
             "**hours**: Time range in hours (alternative to count)\n"
-            "**length**: Summary length - short, medium, or long"
+            "**length**: Summary length - short (1-2 sentences) or long (brief summary, default)"
         ),
         inline=False
     )

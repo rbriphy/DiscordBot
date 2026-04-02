@@ -45,13 +45,22 @@ class MessageSummarizer:
         """
         length_instructions = {
             "short": "Write 1-2 casual sentences summarizing what happened",
-            "medium": "Write a brief casual summary of the conversation",
-            "long": "Write a casual summary covering what was discussed"
+            "long": "Write a brief casual summary of the conversation"
         }
         
-        instruction = length_instructions.get(summary_length, length_instructions["medium"])
+        instruction = length_instructions.get(summary_length, length_instructions["short"])
         
-        prompt = f"""Summarize this Discord conversation. {instruction}. Use the actual names from the messages. Write like you're telling a friend what happened. Don't analyze sentiment or tone - just describe what people talked about.
+        prompt = f"""Summarize this Discord conversation. {instruction}. Use the actual names from the messages. Use plain language without sounding like a business report. Don't analyze sentiment or tone - just describe what people talked about.
+
+        Username Cheat Sheet Format: (Username:Nickname) 
+        Refer to users as their Nickname when performing summaries. The Username is what is displayed in chat.
+        ($3 evnm:evnm),
+        (#1 Matcha in Ohio:ShotsFired),
+        (slim:slime),
+        (#2'shotsfired:Jack),
+        (Miss Rancy:Srancy),
+        (Alice's Ex (dm cucked):Bobby),
+        (Mr Ieyasu:Ieyasu).
 
 Messages:
 {messages_text}
