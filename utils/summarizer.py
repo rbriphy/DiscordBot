@@ -44,22 +44,16 @@ class MessageSummarizer:
             Formatted prompt string
         """
         length_instructions = {
-            "short": "Provide a brief 2-3 sentence summary",
-            "medium": "Provide a concise summary in 1-2 paragraphs",
-            "long": "Provide a detailed summary covering all key points"
+            "short": "Write 1-2 casual sentences summarizing what happened",
+            "medium": "Write a brief casual summary of the conversation",
+            "long": "Write a casual summary covering what was discussed"
         }
         
         instruction = length_instructions.get(summary_length, length_instructions["medium"])
         
-        prompt = f"""Please summarize the following Discord channel conversation. {instruction}.
+        prompt = f"""Summarize this Discord conversation. {instruction}. Use the actual names from the messages. Write like you're telling a friend what happened. Don't analyze sentiment or tone - just describe what people talked about.
 
-Focus on:
-- Main topics discussed
-- Key decisions or conclusions
-- Important information shared
-- Overall sentiment/tone
-
-Conversation:
+Messages:
 {messages_text}
 
 Summary:"""
