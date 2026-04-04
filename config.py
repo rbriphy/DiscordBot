@@ -13,12 +13,13 @@ OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
 OPENROUTER_BASE_URL = os.getenv('OPENROUTER_BASE_URL', 'https://openrouter.ai/api/v1')
 
 # Model Configuration
-DEFAULT_MODEL = os.getenv('DEFAULT_MODEL', 'anthropic/claude-3.5-sonnet')
+DEFAULT_MODEL = os.getenv('DEFAULT_MODEL', 'stepfun/step-3.5-flash:free')
 MAX_TOKENS = int(os.getenv('MAX_TOKENS', '1000'))
 
 # Summarization Settings
 MAX_MESSAGES_PER_REQUEST = int(os.getenv('MAX_MESSAGES_PER_REQUEST', '100'))
 DEFAULT_MESSAGE_COUNT = int(os.getenv('DEFAULT_MESSAGE_COUNT', '50'))
+SUMMARY_TEMPERATURE = float(os.getenv('SUMMARY_TEMPERATURE', '0.3'))
 
 def validate_config():
     """Validate that all required configuration is present."""

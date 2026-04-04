@@ -1,12 +1,20 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import asyncio
+import logging
 from typing import Optional
 
 import config
 from utils.summarizer import MessageSummarizer
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Validate configuration on startup
 config.validate_config()
@@ -22,18 +30,49 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 # Initialize summarizer
 summarizer = MessageSummarizer()
 
+async def fetch_channel_messages(channel, limit=None, after=None):
+    """Fetch and format messages from a channel.
+    
+    Args:
+        channel: The Discord channel to fetch messages from
+        limit: Maximum number of messages to fetch
+        after: Only fetch messages after this datetime
+        
+    Returns:
+        List of formatted message dictionaries in chronological order
+    """
+    messages = []
+    kwargs = {}
+    
+    if limit:
+        kwargs['limit'] = limit
+    if after:
+        kwargs['after'] = after
+    
+    async for message in channel.history(**kwargs):
+        if not message.author.bot:  # Skip bot messages
+            messages.append({
+                'author': str(message.author.display_name),
+                'content': message.content,
+                'timestamp': message.created_at.strftime('%Y-%m-%d %H:%M')
+            })
+    
+    # Reverse to chronological order (oldest first)
+    messages.reverse()
+    return messages
+
 @bot.event
 async def on_ready():
     """Called when the bot is ready and connected to Discord."""
-    print(f'{bot.user} has connected to Discord!')
-    print(f'Bot is in {len(bot.guilds)} guild(s)')
+    logger.info(f'{bot.user} has connected to Discord!')
+    logger.info(f'Bot is in {len(bot.guilds)} guild(s)')
     
     # Sync slash commands
     try:
         synced = await bot.tree.sync()
-        print(f'Synced {len(synced)} command(s)')
+        logger.info(f'Synced {len(synced)} command(s)')
     except Exception as e:
-        print(f'Failed to sync commands: {e}')
+        logger.error(f'Failed to sync commands: {e}')
 
 @bot.tree.command(name='summarize', description='Summarize recent messages in this channel')
 @app_commands.describe(
@@ -66,18 +105,12 @@ async def summarize_command(
         # Determine how many messages to fetch
         if hours:
             # Summarize messages from last X hours
-            after_time = datetime.utcnow() - timedelta(hours=hours)
-            messages = []
-            async for message in interaction.channel.history(after=after_time, limit=config.MAX_MESSAGES_PER_REQUEST):
-                if not message.author.bot:  # Skip bot messages
-                    messages.append({
-                        'author': str(message.author.display_name),
-                        'content': message.content,
-                        'timestamp': message.created_at.strftime('%Y-%m-%d %H:%M')
-                    })
-            
-            # Reverse messages to chronological order (oldest first)
-            messages.reverse()
+            after_time = datetime.now(timezone.utc) - timedelta(hours=hours)
+            messages = await fetch_channel_messages(
+                interaction.channel,
+                limit=config.MAX_MESSAGES_PER_REQUEST,
+                after=after_time
+            )
             
             if not messages:
                 await interaction.followup.send(
@@ -90,20 +123,21 @@ async def summarize_command(
             
         else:
             # Summarize last X messages
-            message_count = count if count else config.DEFAULT_MESSAGE_COUNT
+            if count is not None:
+                message_count = count
+            else:
+                message_count = config.DEFAULT_MESSAGE_COUNT
+            
+            # Validate count is at least 1
+            if message_count < 1:
+                await interaction.followup.send(
+                    "Count must be at least 1.",
+                    ephemeral=True
+                )
+                return
+            
             message_count = min(message_count, config.MAX_MESSAGES_PER_REQUEST)
-            
-            messages = []
-            async for message in interaction.channel.history(limit=message_count):
-                if not message.author.bot:  # Skip bot messages
-                    messages.append({
-                        'author': str(message.author.display_name),
-                        'content': message.content,
-                        'timestamp': message.created_at.strftime('%Y-%m-%d %H:%M')
-                    })
-            
-            # Reverse messages to chronological order (oldest first)
-            messages.reverse()
+            messages = await fetch_channel_messages(interaction.channel, limit=message_count)
             
             if not messages:
                 await interaction.followup.send(
@@ -122,7 +156,7 @@ async def summarize_command(
             title="📝 Channel Summary",
             description=summary,
             color=discord.Color.blue(),
-            timestamp=datetime.utcnow()
+            timestamp=datetime.now(timezone.utc)
         )
         embed.set_footer(text=f"Summarized {time_description} • Length: {summary_length}")
         
@@ -131,7 +165,7 @@ async def summarize_command(
     except Exception as e:
         error_message = f"An error occurred while summarizing: {str(e)}"
         await interaction.followup.send(error_message, ephemeral=True)
-        print(f"Summarize command error: {e}")
+        logger.error(f"Summarize command error: {e}")
 
 @bot.tree.command(name='summarize_help', description='Get help with the summarize command')
 async def help_command(interaction: discord.Interaction):
@@ -157,7 +191,7 @@ async def help_command(interaction: discord.Interaction):
     embed.add_field(
         name="Options",
         value=(
-            "**count**: Number of messages (1-100, default: 50)\n"
+            f"**count**: Number of messages (1-{config.MAX_MESSAGES_PER_REQUEST}, default: {config.DEFAULT_MESSAGE_COUNT})\n"
             "**hours**: Time range in hours (alternative to count)\n"
             "**length**: Summary length - short (1-2 sentences, default) or long (brief summary)"
         ),
@@ -181,11 +215,11 @@ async def on_command_error(ctx, error):
     """Handle command errors."""
     if isinstance(error, commands.CommandNotFound):
         return
-    print(f"Command error: {error}")
+    logger.error(f"Command error: {error}")
 
 def main():
     """Main entry point for the bot."""
-    print("Starting Discord bot...")
+    logger.info("Starting Discord bot...")
     bot.run(config.DISCORD_TOKEN)
 
 if __name__ == '__main__':

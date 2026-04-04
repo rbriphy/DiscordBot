@@ -266,16 +266,6 @@ All configuration is done via environment variables in `.env`:
 - Verify all dependencies installed: `pip install -r requirements.txt`
 - Check logs for error messages
 
-## Models Available
-
-You can change the model in `.env`. Popular options:
-- `anthropic/claude-3.5-sonnet` (default, high quality)
-- `anthropic/claude-3-haiku` (faster, cheaper)
-- `openai/gpt-4-turbo` (OpenAI's GPT-4)
-- `openai/gpt-3.5-turbo` (faster, cheaper)
-
-See all models: https://openrouter.ai/models
-
 ## License
 
 This project is for personal use. Feel free to modify and adapt.
