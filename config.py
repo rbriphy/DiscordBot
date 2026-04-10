@@ -13,7 +13,9 @@ OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
 OPENROUTER_BASE_URL = os.getenv('OPENROUTER_BASE_URL', 'https://openrouter.ai/api/v1')
 
 # Model Configuration
-DEFAULT_MODEL = os.getenv('DEFAULT_MODEL', 'openai/gpt-oss-120b:free')
+# These are hardcoded in config so you can safely commit them to git
+# Environment variables will NOT override these values
+DEFAULT_MODEL = 'openai/gpt-oss-120b:free'
 MAX_TOKENS = int(os.getenv('MAX_TOKENS', '1000'))
 
 # Summarization Settings
