@@ -15,7 +15,7 @@ OPENROUTER_BASE_URL = os.getenv('OPENROUTER_BASE_URL', 'https://openrouter.ai/ap
 # Model Configuration
 # These are hardcoded in config so you can safely commit them to git
 # Environment variables will NOT override these values
-DEFAULT_MODEL = 'openai/gpt-oss-120b:free'
+DEFAULT_MODEL = 'openrouter/free'
 MAX_TOKENS = int(os.getenv('MAX_TOKENS', '1000'))
 
 # Summarization Settings
